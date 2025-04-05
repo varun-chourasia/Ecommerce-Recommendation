@@ -1,9 +1,3 @@
-### **README.md Content for Your Project**  
-
-Create or edit your `README.md` file in the project directory and add the following content:  
-
----
-
 # **AI-Powered E-Commerce Product Recommendation System** 🚀  
 
 This project is a **multi-agent AI system** that provides personalized **e-commerce product recommendations** using **machine learning models and AI agents**.  
