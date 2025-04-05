@@ -1,75 +1,73 @@
 import streamlit as st
 import sqlite3
 
-# Function to fetch product recommendations for a customer
-def fetch_recommendations(customer_id):
-    conn = sqlite3.connect("ecommerce_recommendations.db")
-    cursor = conn.cursor()
-    cursor.execute("""
+# Function to fetch recommendations
+def fetch_recommendations():
+    customer_id = st.session_state.customer_input  # Get value from input
+    if customer_id:
+        st.session_state.submitted = True  # Trigger recommendations
+        conn = sqlite3.connect("ecommerce_recommendations.db")
+        cursor = conn.cursor()
+
+        # Fetch top 6 recommended products for the given customer ID
+        query = """
         SELECT Recommended_Product_ID, Score 
         FROM recommendations 
         WHERE Customer_ID = ? 
         ORDER BY Score DESC 
-        LIMIT 5
-    """, (customer_id,))
-    recommendations = cursor.fetchall()
-    conn.close()
-    return recommendations
+        LIMIT 6
+        """
+        cursor.execute(query, (customer_id,))
+        recommendations = cursor.fetchall()
+        conn.close()
 
-# Function to fetch product details
-def fetch_product_details(product_id):
-    conn = sqlite3.connect("ecommerce_recommendations.db")
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT Product_ID, Category, Subcategory, Price, Brand, Product_Rating
-        FROM products
-        WHERE Product_ID = ?
-    """, (product_id,))
-    product_details = cursor.fetchone()
-    conn.close()
-    return product_details
+        # Store recommendations in session state
+        st.session_state.recommendations = recommendations
 
-# Streamlit UI Configuration
-st.set_page_config(page_title="AI-Powered Recommendations", layout="wide")
-st.title("🔍 AI-Powered Product Recommendations")
-
-# Initialize session state
+# Initialize session state variables
+if "submitted" not in st.session_state:
+    st.session_state.submitted = False
 if "recommendations" not in st.session_state:
-    st.session_state.recommendations = None
+    st.session_state.recommendations = []
 
-# Input field
-customer_id = st.text_input("Enter Customer ID (e.g., C1000):", key="customer_input")
+# Streamlit UI Components
+st.markdown('<h1 style="text-align:center;">🔍 AI-Powered Product Recommendations</h1>', unsafe_allow_html=True)
+st.subheader("Enter a Customer ID to Get Personalized Suggestions")
 
-# If a new Customer ID is entered, clear old recommendations
-if customer_id != st.session_state.get("current_customer", ""):
-    st.session_state.recommendations = None
+# Input Field with 'Enter' key functionality
+customer_input = st.text_input("Enter Customer ID (e.g., C1000)", key="customer_input", on_change=fetch_recommendations)
 
-# Get Recommendations Button
-if st.button("Get Recommendations", key="get_recs") and customer_id:
-    st.session_state.recommendations = fetch_recommendations(customer_id)
-    st.session_state.current_customer = customer_id  # Store the current customer ID
+# Button to fetch recommendations manually
+if st.button("Get Recommendations"):
+    fetch_recommendations()
 
-# Display recommendations if available
-if st.session_state.recommendations:
-    st.subheader(f"✅ Recommendations for Customer: {customer_id}")
+# Show recommendations when submitted
+if st.session_state.submitted and st.session_state.recommendations:
+    st.success(f"✅ Top 6 Recommendations for Customer: {customer_input}")
 
-    for product_id, score in st.session_state.recommendations:
-        product = fetch_product_details(product_id)
-        if product:
-            product_id, category, subcategory, price, brand, rating = product
+    # Create rows of 3 cards per row
+    cols = st.columns(3)  # 3 columns for even distribution
 
-            # Display product details as a card
+    for index, (product_id, score) in enumerate(st.session_state.recommendations):
+        with cols[index % 3]:  # Arrange in 3-column layout
             st.markdown(
                 f"""
-                <div style="border-radius: 10px; background-color: #2E3B4E; padding: 15px; margin-bottom: 10px; color: white;">
-                    <h4>🛒 {product_id} - {brand}</h4>
-                    <p>📦 Category: {category} ({subcategory})</p>
-                    <p>💲 Price: ${price}</p>
-                    <p>⭐ Rating: {round(rating, 1)}</p>
-                    <p>🔢 Recommendation Score: {round(score, 2)}</p>
+                <div style="
+                    background: linear-gradient(135deg, #2E2E2E, #1C1C1C);
+                    padding: 30px;
+                    border-radius: 12px;
+                    box-shadow: 0px 10px 25px rgba(255, 215, 0, 0.7);
+                    text-align: center;
+                    width: 100%;
+                    max-width: 550px;  /* Increased width */
+                    height: 320px;
+                    margin-bottom: 70px;">
+                    <h3>🛒 {product_id}</h3>
+                    <p>Category: Fashion</p>
+                    <p>💰 Price: ${round(score * 1000, 2)}</p>
+                    <p>⭐ Rating: {round(score * 5 / 2, 1)}</p>
+                    <p>🔥 Score: {round(score, 2)}</p>
                 </div>
                 """,
-                unsafe_allow_html=True
+                unsafe_allow_html=True,
             )
-else:
-    st.warning("⚠️ Enter a Customer ID and click 'Get Recommendations' to see results.")
