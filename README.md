@@ -27,8 +27,7 @@ HACKATHON_PROJECT/
 ## **💻 Installation**  
 ### **1️⃣ Clone the repository**  
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY_NAME.git
-cd YOUR_REPOSITORY_NAME
+git clone ttps://github.com/varun-chourasia/Ecommerce-Recommendation.git
 ```
 
 ### **2️⃣ Create a virtual environment & install dependencies**  
