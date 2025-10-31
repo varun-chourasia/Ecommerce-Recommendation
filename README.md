@@ -62,5 +62,5 @@ streamlit run ui.py
 ## **📝 License**  
 This project is **open-source** and can be modified as per requirements.  
 
-🔗 **Live Demo:** [Deployed App Link]([https://ecommerce-recommendation-mgv82emywi9a49ysfe4dwd.streamlit.app/])  
+🔗 **Live Demo:** [Deployed App Link](https://ecommerce-recommendation-mgv82emywi9a49ysfe4dwd.streamlit.app/)  
 
